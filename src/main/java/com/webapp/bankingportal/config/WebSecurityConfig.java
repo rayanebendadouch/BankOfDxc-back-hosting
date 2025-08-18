@@ -1,6 +1,9 @@
 package com.webapp.bankingportal.config;
 
+import com.webapp.bankingportal.entity.User;
+import com.webapp.bankingportal.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

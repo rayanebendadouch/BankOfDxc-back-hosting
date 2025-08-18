@@ -1,5 +1,6 @@
 package com.webapp.bankingportal.repository;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,4 +16,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByPhoneNumber(String phoneNumber);
 
     Optional<User> findByAccountAccountNumber(String accountNumber);
+
 }
