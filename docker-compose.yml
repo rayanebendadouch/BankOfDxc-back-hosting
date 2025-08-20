@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./BankingPortal-back
+      dockerfile: Dockerfile
+    container_name: banking-back
+    ports:
+      - "8180:8180"
+    env_file:
+      - ./BankingPortal-back/.env
+    depends_on:
+      - mysql
+
+  frontend:
+    build:
+      context: /dirchemindyalfrontenda3chiri
+      dockerfile: Dockerfile
+    container_name: banking-front
+    ports:
+      - "4200:80"  # assuming your Nginx serves Angular on port 80
+    depends_on:
+      - backend
+
+  mysql:
+    image: mysql:8.0
+    container_name: banking-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bankingapp
+      MYSQL_USER: rayan
+      MYSQL_PASSWORD: rayanrayan
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
