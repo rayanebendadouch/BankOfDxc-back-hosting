@@ -33,8 +33,8 @@ public class Account {
 
     private String accountStatus;
     private double balance;
-    private String branch = "NIT";
-    private String ifscCode = "NIT001";
+    private String branch = "Attijariwafa Bank";
+    private String ifscCode = "310 780 00012345678901234";
     private String Pin;
 
     @NotNull

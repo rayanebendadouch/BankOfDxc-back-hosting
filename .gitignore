@@ -27,6 +27,8 @@ dependency-reduced-pom.xml
 # VS Code
 .vscode/
 
+#environement
+.env
 # OS specific
 .DS_Store
 Thumbs.db
