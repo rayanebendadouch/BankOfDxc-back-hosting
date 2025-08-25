@@ -11,7 +11,6 @@ variables:
   FRONTEND_IMAGE: "593710895744.dkr.ecr.us-east-1.amazonaws.com/dxc_bank/frontend"
   BACKEND_IMAGE: "593710895744.dkr.ecr.us-east-1.amazonaws.com/dxc_bank/backend"
   DB_IMAGE: "593710895744.dkr.ecr.us-east-1.amazonaws.com/dxc_bank/db"
-  NEXUS_REPO_URL: "http://nexus.example.com/repository/maven-releases/"
   SONARQUBE_ENDPOINT: "SonarQubeServiceConnection"
 
 stages:
@@ -80,17 +79,6 @@ stages:
             docker build -t $(BACKEND_IMAGE):$(IMAGE_TAG) ./backend
           displayName: "Build Backend Docker Image"
 
-# Stage 3: Build the Database Docker image
-- stage: Build_DB
-  displayName: "DB Image Build"
-  jobs:
-    - job: Database
-      steps:
-        - checkout: self
-        - script: |
-            docker build -t $(DB_IMAGE):$(IMAGE_TAG) ./db
-          displayName: "Build DB Docker Image"
-
 # Stage 4: Security Scan pre-built images
 - stage: Scan_Images
   displayName: "Trivy Image Scans"
@@ -111,10 +99,6 @@ stages:
             trivy image --exit-code 1 --severity HIGH,CRITICAL $(BACKEND_IMAGE):$(IMAGE_TAG)
           displayName: "Scan Backend Image"
 
-        - script: |
-            trivy image --exit-code 1 --severity HIGH,CRITICAL $(DB_IMAGE):$(IMAGE_TAG)
-          displayName: "Scan DB Image"
-
 # Stage 5: Push successfully scanned images to registry
 - stage: Push_Images
   displayName: "Push Docker Images to AWS ECR"
@@ -134,7 +118,6 @@ stages:
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 593710895744.dkr.ecr.us-east-1.amazonaws.com
             docker push $(FRONTEND_IMAGE):$(IMAGE_TAG)
             docker push $(BACKEND_IMAGE):$(IMAGE_TAG)
-            docker push $(DB_IMAGE):$(IMAGE_TAG)
           displayName: "Login to ECR & Push Images"
 
 # Stage 6: Deploy new images to Kubernetes 
@@ -143,31 +126,5 @@ stages:
   dependsOn: Push_Images
   jobs:
     - job: Deploy
-      steps:
-        # IMPORTANT: CHOOSE ONE METHOD BELOW TO CONFIGURE KUBECTL
-
-        # --- METHOD 1: Using a Kubernetes Service Account Token (Recommended) ---
-        # - task: Kubernetes@1
-        #   inputs:
-        #     connectionType: 'Kubernetes Service Connection'
-        #     kubernetesServiceEndpoint: 'My_EC2_K8s_Cluster' # Create this Service Connection in Azure DevOps
-        #   displayName: 'Configure Kubectl Context (Service Account)'
-
-        # --- METHOD 2: Using a Kubeconfig file from a secret variable ---
-        - script: |
-            echo '$(KUBECONFIG_BASE64)' | base64 -d > ./kubeconfig
-            export KUBECONFIG=./kubeconfig
-          displayName: 'Configure Kubectl Context (Kubeconfig File)'
-          env:
-            KUBECONFIG_BASE64: $(KUBECONFIG_BASE64) # Secure variable containing base64-encoded kubeconfig
-
-        # --- YOUR DEPLOYMENT COMMANDS ---
-        - script: |
-            kubectl set image deployment/frontend frontend=$(FRONTEND_IMAGE):$(IMAGE_TAG) -n my-app
-            kubectl set image deployment/backend backend=$(BACKEND_IMAGE):$(IMAGE_TAG) -n my-app
-            kubectl set image deployment/db db=$(DB_IMAGE):$(IMAGE_TAG) -n my-app
-
-            kubectl rollout status deployment/frontend -n my-app
-            kubectl rollout status deployment/backend -n my-app
-            kubectl rollout status deployment/db -n my-app
-          displayName: "Deploy & Verify Rollout"
+     
+       
